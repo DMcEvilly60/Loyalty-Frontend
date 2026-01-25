@@ -192,7 +192,7 @@
 
                     <div class="input-group">
                         <span class="input-group-text bg-light text-muted border-end-0">Department</span>
-                        <select id="stamp_dept_id" class="form-select border-start-0 ps-2" style="background-color: white;">
+                        <select id="stamp_dept" class="form-select border-start-0 ps-2" style="background-color: white;">
                             </select>
                     </div>
                 </div>
@@ -227,7 +227,7 @@
     
     // Helper: Populate Department Dropdown (0-250)
     function populateDepartments() {
-        const select = document.getElementById('stamp_dept_id');
+        const select = document.getElementById('stamp_dept');
         select.innerHTML = ''; // clear existing
         
         for (let i = 0; i <= 250; i++) {
@@ -255,7 +255,7 @@
             document.getElementById('discount_logic').value = data.discount_logic;
             
             // Set the dropdown value
-            document.getElementById('stamp_dept_id').value = data.stamp_dept_id;
+            document.getElementById('stamp_dept').value = data.stamp_dept;
             
             // Artificial delay for smoothness
             setTimeout(() => {
@@ -275,7 +275,7 @@
         const updates = {
             stamps_for_free_item: parseInt(document.getElementById('stamps_for_free_item').value),
             discount_logic: document.getElementById('discount_logic').value,
-            stamp_dept_id: parseInt(document.getElementById('stamp_dept_id').value)
+            stamp_dept: parseInt(document.getElementById('stamp_dept').value)
         };
 
         const { error } = await supabaseClient

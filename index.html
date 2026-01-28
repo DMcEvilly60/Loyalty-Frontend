@@ -22,135 +22,114 @@
         body { 
             background-color: var(--bg-color); 
             font-family: 'Inter', sans-serif; 
-            color: #1e293b;
-            padding-bottom: 120px; 
+            color: #1e293b; 
+            padding-bottom: 90px; /* Added padding for nav bar */
             -webkit-font-smoothing: antialiased;
         }
-
-        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; }
         
-        /* HEADER */
-        .header { background: white; padding: 25px 20px 20px; border-bottom: 1px solid #e2e8f0; margin-bottom: 25px; text-align: center; }
-        .header h3 { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.5px; margin-bottom: 4px; }
-        .header p { color: #64748b; font-size: 0.9rem; }
-
-        /* CARDS */
-        .custom-card { background: white; border: none; border-radius: var(--card-radius); box-shadow: var(--card-shadow); margin-bottom: 20px; overflow: hidden; }
-        .card-body { padding: 24px; }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
         
-        /* ICONS */
-        .icon-box { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 12px; margin-bottom: 15px; }
-        .bg-indigo { background: #e0e7ff; color: #4f46e5; }
-        .bg-purple { background: #f3e8ff; color: #9333ea; }
-        .bg-emerald { background: #d1fae5; color: #059669; }
-        .bg-slate { background: #f1f5f9; color: #475569; }
+        .header { background: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .header h3 { font-weight: 700; margin: 0; color: #0f172a; letter-spacing: -0.5px; }
+        .header p { color: #64748b; margin-top: 5px; font-size: 0.9rem; }
 
-        .label-title { font-weight: 600; font-size: 1rem; margin-bottom: 2px; display: block; }
-        .label-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 15px; display: block; }
+        .config-card { background: white; border-radius: var(--card-radius); padding: 24px; margin-bottom: 16px; border: 1px solid #f1f5f9; box-shadow: var(--card-shadow); }
+        .card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; margin-bottom: 12px; display: block; }
+        
+        .number-control { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .btn-control { width: 44px; height: 44px; border-radius: 10px; border: none; background: white; color: #4f46e5; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; cursor: pointer; }
+        .btn-control:active { transform: scale(0.95); background: #eef2ff; }
+        .value-display { font-size: 1.25rem; font-weight: 700; color: #1e293b; min-width: 50px; text-align: center; background: transparent; border: none; }
 
-        /* CONTROLS */
-        .form-control, .form-select, .input-group-text { border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; font-size: 1rem; background-color: #f8fafc; }
-        .form-control:focus, .form-select:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background-color: white; }
+        .select-wrapper { position: relative; }
+        .select-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; }
+        .form-select { height: 55px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 1rem; font-weight: 500; color: #1e293b; padding-left: 15px; background-color: #f8fafc; cursor: pointer; appearance: none; }
+        .form-select:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+
+        .save-bar { position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, white 80%, rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: center; z-index: 50; }
+        .btn-save { pointer-events: auto; background: var(--primary-gradient); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 1rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); transition: transform 0.2s; width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-save:active { transform: scale(0.98); }
+
+        /* LOADING OVERLAY */
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
         
-        /* SAVE BAR */
-        .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; z-index: 100; }
-        .btn-primary { background: var(--primary-gradient); border: none; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); padding: 14px; }
-        
-        /* LOADING */
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #f8fafc; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; padding: 10px 0; display: flex; justify-content: space-around; z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #94a3b8; font-size: 0.75rem; font-weight: 500; }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #4f46e5; }
     </style>
 </head>
 <body>
 
-<div id="loading">
-    <div class="spinner-border text-primary" style="width: 2.5rem; height: 2.5rem; border-width: 3px;" role="status"></div>
-    <div class="mt-3 fw-medium text-secondary" style="font-size: 0.9rem;">Connecting to Store...</div>
+<div class="loading-overlay" id="loading">
+    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="fw-bold text-secondary">Loading Config...</h5>
 </div>
 
 <div class="app-container">
-    
     <div class="header">
-        <h3>Loyalty Manager</h3>
-        <p>Update your loyalty settings instantly</p>
+        <h3>Loyalty Config</h3>
+        <p>Manage store rewards & rules</p>
     </div>
 
     <div class="container px-3">
-        <form id="settingsForm">
-            
-            <div class="custom-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon-box bg-indigo"><i class="bi bi-star-fill"></i></div>
-                        <div><span class="label-title">Stamp Goal</span></div>
-                    </div>
-                    <span class="label-desc">How many stamps to earn a free item?</span>
-                    
-                    <div class="input-group">
-                        <button class="btn btn-outline-secondary" type="button" onclick="adjust('stamps_for_free_item', -1)"><i class="bi bi-dash-lg"></i></button>
-                        <input type="number" id="stamps_for_free_item" class="form-control text-center fw-bold text-dark" value="0" readonly style="background: white;">
-                        <button class="btn btn-outline-secondary" type="button" onclick="adjust('stamps_for_free_item', 1)"><i class="bi bi-plus-lg"></i></button>
-                    </div>
-                </div>
+        <div class="config-card">
+            <label class="card-label"><i class="bi bi-trophy-fill me-2 text-warning"></i>Stamps for Free Item</label>
+            <div class="number-control">
+                <button class="btn-control" onclick="adjust('stamps_for_free_item', -1)"><i class="bi bi-dash"></i></button>
+                <input type="number" id="stamps_for_free_item" class="value-display" readonly>
+                <button class="btn-control" onclick="adjust('stamps_for_free_item', 1)"><i class="bi bi-plus"></i></button>
             </div>
+        </div>
 
-            <div class="custom-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon-box bg-purple"><i class="bi bi-people-fill"></i></div>
-                        <div><span class="label-title">Loyalty Group</span></div>
-                    </div>
-                    <span class="label-desc">Which Customer Group qualifies? (1-100)</span>
-                    
-                    <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0">Group ID</span>
-                        <select id="loyalty_group" class="form-select border-start-0 ps-2" style="background-color: white;">
-                            </select>
-                    </div>
-                </div>
+        <div class="config-card">
+            <label class="card-label"><i class="bi bi-people-fill me-2 text-info"></i>Customer Group ID</label>
+            <div class="number-control">
+                <button class="btn-control" onclick="adjust('loyalty_group', -1)"><i class="bi bi-dash"></i></button>
+                <input type="number" id="loyalty_group" class="value-display" readonly>
+                <button class="btn-control" onclick="adjust('loyalty_group', 1)"><i class="bi bi-plus"></i></button>
             </div>
+            <div class="text-muted small mt-2 ms-1"><i class="bi bi-info-circle me-1"></i>Links to TouchPoint Group</div>
+        </div>
 
-            <div class="custom-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon-box bg-emerald"><i class="bi bi-tag-fill"></i></div>
-                        <div><span class="label-title">Reward Rule</span></div>
-                    </div>
-                    <span class="label-desc">Which item becomes free?</span>
-
-                    <select id="discount_logic" class="form-select">
-                        <option value="Highest">Most Expensive Item</option>
-                        <option value="Lowest">Cheapest Item</option>
-                    </select>
-                    
-                    <div class="d-flex align-items-center mt-3 p-2 rounded" style="background: #fef2f2; color: #991b1b; font-size: 0.8rem;">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
-                        <span>Don't be a greedy cunt</span>
-                    </div>
-                </div>
+        <div class="config-card">
+            <label class="card-label"><i class="bi bi-tag-fill me-2 text-success"></i>Stamp Department</label>
+            <div class="number-control">
+                <button class="btn-control" onclick="adjust('stamp_dept', -1)"><i class="bi bi-dash"></i></button>
+                <input type="number" id="stamp_dept" class="value-display" readonly>
+                <button class="btn-control" onclick="adjust('stamp_dept', 1)"><i class="bi bi-plus"></i></button>
             </div>
+        </div>
 
-            <div class="custom-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon-box bg-slate"><i class="bi bi-hdd-network-fill"></i></div>
-                        <div><span class="label-title">Technical Setup</span></div>
-                    </div>
-                    <span class="label-desc">Which PLU Department earns stamps?</span>
-
-                    <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0">Department</span>
-                        <select id="stamp_dept" class="form-select border-start-0 ps-2" style="background-color: white;">
-                            </select>
-                    </div>
-                </div>
+        <div class="config-card">
+            <label class="card-label"><i class="bi bi-calculator-fill me-2 text-danger"></i>Discount Logic</label>
+            <div class="select-wrapper">
+                <select class="form-select" id="discount_logic">
+                    <option value="Lowest">Lowest Price Item Free</option>
+                    <option value="Highest">Highest Price Item Free</option>
+                </select>
+                <i class="bi bi-chevron-down"></i>
             </div>
-
-        </form>
+        </div>
     </div>
+</div>
 
-    <div class="save-bar">
-        <button onclick="saveSettings()" class="btn btn-primary btn-lg w-100" style="max-width: 500px;">Save Changes</button>
-    </div>
+<div class="save-bar">
+    <button class="btn-save" onclick="saveSettings()">
+        <i class="bi bi-cloud-check-fill"></i> Save Changes
+    </button>
+</div>
+
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+        <i class="bi bi-gear-fill"></i>
+        <span>Settings</span>
+    </a>
+    <a href="customers.html" class="nav-item">
+        <i class="bi bi-people-fill"></i>
+        <span>Customers</span>
+    </a>
 </div>
 
 <script>
@@ -159,43 +138,18 @@
     // ==========================================
     const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
-    
-    // Initialize
+    const SETTINGS_ID = 1; // Assuming you only have 1 row for settings
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const SETTINGS_ID = 1;
 
     // ==========================================
     // LOGIC
     // ==========================================
-    
-    // Populate Departments (0-250)
-    function populateDepartments() {
-        const select = document.getElementById('stamp_dept');
-        select.innerHTML = ''; 
-        for (let i = 0; i <= 250; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.text = "Dept " + i;
-            select.appendChild(option);
-        }
-    }
+    window.onload = function() {
+        fetchSettings();
+    };
 
-    // Populate Groups (1-100)
-    function populateGroups() {
-        const select = document.getElementById('loyalty_group');
-        select.innerHTML = ''; 
-        for (let i = 1; i <= 100; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.text = "Group " + i;
-            select.appendChild(option);
-        }
-    }
-
-    async function init() {
-        populateDepartments();
-        populateGroups();
-
+    async function fetchSettings() {
         const { data, error } = await supabaseClient
             .from('Settings')
             .select('*')
@@ -203,15 +157,15 @@
             .single();
 
         if (error) {
-            alert("Error loading settings: " + error.message);
-        } else if(data) {
+            alert("Error fetching data: " + error.message);
+            document.getElementById('loading').style.display = 'none';
+        } else {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
-            
-            // Set Dropdown Values
-            document.getElementById('loyalty_group').value = data.loyalty_group || 1; 
+            document.getElementById('loyalty_group').value = data.loyalty_group;
             document.getElementById('discount_logic').value = data.discount_logic;
             document.getElementById('stamp_dept').value = data.stamp_dept;
             
+            // Fade out loader
             setTimeout(() => {
                 const loader = document.getElementById('loading');
                 loader.style.opacity = '0';
@@ -221,9 +175,11 @@
     }
 
     async function saveSettings() {
+        // Show loader briefly
         const loader = document.getElementById('loading');
         loader.style.display = 'flex';
         loader.style.opacity = '1';
+        loader.querySelector('h5').innerText = "Saving...";
         
         const updates = {
             stamps_for_free_item: parseInt(document.getElementById('stamps_for_free_item').value),
@@ -250,8 +206,7 @@
         if(val < 0) val = 0;
         el.value = val;
     }
-
-    init();
 </script>
+
 </body>
 </html>

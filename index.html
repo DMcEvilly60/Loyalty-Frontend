@@ -23,12 +23,18 @@
             background-color: var(--bg-color); 
             font-family: 'Inter', sans-serif; 
             color: #1e293b; 
-            padding-bottom: 90px; 
+            /* We handle bottom spacing in app-container now */
             -webkit-font-smoothing: antialiased;
         }
         
         /* RESPONSIVE CONTAINER */
-        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; }
+        .app-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            min-height: 100vh;
+            /* MOBILE FIX: Huge padding to clear the floating Save Bar (80px offset + button height) */
+            padding-bottom: 180px; 
+        }
         
         .header { background: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
         .header h3 { font-weight: 700; margin: 0; }
@@ -44,7 +50,7 @@
         .select-wrapper { position: relative; }
         .form-select { height: 55px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 1rem; font-weight: 500; background-color: #f8fafc; }
 
-        /* SAVE BAR (Mobile Default) */
+        /* SAVE BAR (Mobile Default: Floating) */
         .save-bar { position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, white 80%, rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: center; z-index: 50; }
         .btn-save { pointer-events: auto; background: var(--primary-gradient); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 1rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
@@ -59,7 +65,12 @@
 
         /* --- DESKTOP UPGRADES --- */
         @media (min-width: 768px) {
-            .app-container { max-width: 1000px; padding-top: 40px; }
+            .app-container { 
+                max-width: 1000px; 
+                padding-top: 40px; 
+                /* DESKTOP FIX: Reset bottom padding since button isn't floating */
+                padding-bottom: 40px; 
+            }
             .header { background: transparent; border: none; text-align: left; padding: 0 0 20px 0; }
             
             /* GRID FOR SETTINGS */
@@ -145,7 +156,6 @@
 </div>
 
 <script>
-    // --- JS LOGIC SAME AS BEFORE ---
     const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
     const SETTINGS_ID = 1; 

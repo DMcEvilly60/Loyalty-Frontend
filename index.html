@@ -11,6 +11,20 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <script>
+        const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        checkUser();
+        async function checkUser() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html'; 
+            }
+        }
+    </script>
+    
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -23,22 +37,18 @@
             background-color: var(--bg-color); 
             font-family: 'Inter', sans-serif; 
             color: #1e293b; 
-            /* We handle bottom spacing in app-container now */
             -webkit-font-smoothing: antialiased;
         }
         
-        /* RESPONSIVE CONTAINER */
         .app-container { 
             max-width: 600px; 
             margin: 0 auto; 
             min-height: 100vh;
-            /* MOBILE FIX: Huge padding to clear the floating Save Bar (80px offset + button height) */
+            /* MOBILE FIX: Clearance for floating save bar */
             padding-bottom: 180px; 
         }
         
-        .header { background: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .header h3 { font-weight: 700; margin: 0; }
-        .header p { color: #64748b; margin-top: 5px; font-size: 0.9rem; }
+        .header { background: white; padding: 30px 20px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
 
         .config-card { background: white; border-radius: var(--card-radius); padding: 24px; margin-bottom: 16px; border: 1px solid #f1f5f9; box-shadow: var(--card-shadow); }
         .card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; margin-bottom: 12px; display: block; }
@@ -50,34 +60,22 @@
         .select-wrapper { position: relative; }
         .form-select { height: 55px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 1rem; font-weight: 500; background-color: #f8fafc; }
 
-        /* SAVE BAR (Mobile Default: Floating) */
         .save-bar { position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, white 80%, rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: center; z-index: 50; }
         .btn-save { pointer-events: auto; background: var(--primary-gradient); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 1rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-        /* LOADING OVERLAY */
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
         
-        /* BOTTOM NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; padding: 10px 0; display: flex; justify-content: center; gap: 40px; z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #94a3b8; font-size: 0.75rem; font-weight: 500; min-width: 60px; }
         .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #4f46e5; }
 
-        /* --- DESKTOP UPGRADES --- */
+        /* DESKTOP TWEAKS */
         @media (min-width: 768px) {
-            .app-container { 
-                max-width: 1000px; 
-                padding-top: 40px; 
-                /* DESKTOP FIX: Reset bottom padding since button isn't floating */
-                padding-bottom: 40px; 
-            }
-            .header { background: transparent; border: none; text-align: left; padding: 0 0 20px 0; }
-            
-            /* GRID FOR SETTINGS */
+            .app-container { max-width: 1000px; padding-top: 40px; padding-bottom: 40px; }
+            .header { background: transparent; border: none; text-align: left; padding: 0 0 20px 0; border-radius: 0; margin-bottom: 0; }
             .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .config-card { margin-bottom: 0; height: 100%; }
-
-            /* SAVE BUTTON DESKTOP */
             .save-bar { position: static; background: transparent; padding: 40px 0; display: block; text-align: right; }
             .btn-save { width: auto; display: inline-flex; padding: 12px 30px; }
         }
@@ -91,9 +89,17 @@
 </div>
 
 <div class="app-container">
+    
     <div class="header">
-        <h3>Loyalty Config</h3>
-        <p>Manage store rewards & rules</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold m-0">Loyalty Config</h3>
+                <p class="text-muted mt-1 m-0 small">Manage store rewards & rules</p>
+            </div>
+            <button onclick="doLogout()" class="btn btn-sm btn-outline-danger px-3 rounded-pill">
+                Sign Out
+            </button>
+        </div>
     </div>
 
     <div class="container-fluid px-0 settings-grid">
@@ -156,12 +162,15 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
-    const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
     const SETTINGS_ID = 1; 
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // --- LOGOUT LOGIC ---
+    async function doLogout() {
+        await supabaseClient.auth.signOut();
+        window.location.href = 'login.html';
+    }
 
+    // --- PAGE LOGIC ---
     window.onload = fetchSettings;
 
     async function fetchSettings() {

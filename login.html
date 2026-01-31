@@ -45,12 +45,12 @@
     
     <div class="mb-3">
         <label class="form-label text-secondary small fw-bold">Email</label>
-        <input type="email" id="email" class="form-control" placeholder="admin@loyalty.test">
+        <input type="email" id="email" class="form-control" placeholder="admin@loyalty.local">
     </div>
 
     <div class="mb-4">
         <label class="form-label text-secondary small fw-bold">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="266******">
+        <input type="password" id="password" class="form-control" placeholder="••••••••">
     </div>
 
     <button onclick="handleLogin()" id="loginBtn" class="btn btn-primary">Sign In</button>
@@ -59,12 +59,21 @@
 </div>
 
 <script>
-    // --- CONFIG ---
+    // 1. Setup Keys
     const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- LOGIN LOGIC ---
+    // 2. Initialize Client
+    // We use a try-catch to catch initialization errors (like missing library)
+    let supabaseClient;
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (e) {
+        alert("CRITICAL ERROR: Supabase library not loaded. Check internet.");
+        console.error(e);
+    }
+
+    // 3. Login Logic
     async function handleLogin() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -76,20 +85,30 @@
         btn.innerText = "Verifying...";
         btn.disabled = true;
 
-        // Attempt Login
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
 
-        if (error) {
-            msg.innerText = "Invalid Credentials";
-            msg.style.display = 'block';
+            if (error) {
+                // Login Failed
+                console.log("Login Error:", error.message);
+                msg.innerText = "Invalid Credentials";
+                msg.style.display = 'block';
+                btn.innerText = "Sign In";
+                btn.disabled = false;
+            } else {
+                // Login Success
+                console.log("Login Success!");
+                window.location.href = 'index.html';
+            }
+        } catch (err) {
+            // Unexpected Crash
+            console.error("Script Error:", err);
+            alert("Unexpected Error: " + err.message);
             btn.innerText = "Sign In";
             btn.disabled = false;
-        } else {
-            // Success: Redirect to dashboard
-            window.location.href = 'index.html';
         }
     }
 

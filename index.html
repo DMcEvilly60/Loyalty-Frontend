@@ -15,28 +15,19 @@
         // ============================================================
         // 1. RETRIEVE SESSION CONFIG
         // ============================================================
-        // We get the URL/Key from the previous Login page
         const storedConfig = sessionStorage.getItem('active_store_config');
 
-        // Security Check: If they didn't log in properly, kick them out
+        // If no keys found, kick them back to login
         if (!storedConfig) {
             window.location.href = 'login.html';
         }
 
         const config = JSON.parse(storedConfig);
         const supabaseClient = supabase.createClient(config.url, config.key);
-        const SETTINGS_ID = 1; // Always row 1
+        const SETTINGS_ID = 1;
 
-        checkUser();
-        
-        async function checkUser() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-            } else {
-                fetchSettings();
-            }
-        }
+        // Load data immediately on page load
+        document.addEventListener('DOMContentLoaded', fetchSettings);
     </script>
 
     <style>
@@ -116,7 +107,6 @@
 
 <script>
     async function fetchSettings() {
-        // We use the client created at the top with the dynamic config
         const { data, error } = await supabaseClient.from('Settings').select('*').single();
         if (!error) {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
@@ -154,10 +144,9 @@
         el.value = val;
     }
 
-    async function doLogout() {
-        await supabaseClient.auth.signOut();
-        sessionStorage.removeItem('active_store_config'); // Clear the keys
-        window.location.href = 'login.html';
+    function doLogout() {
+        sessionStorage.removeItem('active_store_config'); // Clear Keys
+        window.location.href = 'login.html'; // Redirect
     }
 </script>
 

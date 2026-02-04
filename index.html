@@ -12,17 +12,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ============================================================
+        // 1. DYNAMIC LOGIN LOGIC (The only change)
+        // ============================================================
+        const storedConfig = sessionStorage.getItem('active_store_config');
 
-        checkUser();
-        async function checkUser() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html'; 
-            }
+        // Security Check
+        if (!storedConfig) {
+            window.location.href = 'login.html';
         }
+
+        const config = JSON.parse(storedConfig);
+        const supabaseClient = supabase.createClient(config.url, config.key);
+        const SETTINGS_ID = 1; // Always row 1
     </script>
     
     <style>
@@ -162,25 +164,26 @@
 </div>
 
 <script>
-    const SETTINGS_ID = 1; 
-
     // --- LOGOUT LOGIC ---
-    async function doLogout() {
-        await supabaseClient.auth.signOut();
+    function doLogout() {
+        sessionStorage.removeItem('active_store_config');
         window.location.href = 'login.html';
     }
 
     // --- PAGE LOGIC ---
-    window.onload = fetchSettings;
-
+    // Moved to bottom to prevent "fetchSettings not defined" error
     async function fetchSettings() {
+        // Use the supabaseClient defined at the top
         const { data, error } = await supabaseClient.from('Settings').select('*').eq('ID', SETTINGS_ID).single();
-        if (!error) {
+        if (!error && data) {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
             document.getElementById('loyalty_group').value = data.loyalty_group;
             document.getElementById('discount_logic').value = data.discount_logic;
             document.getElementById('stamp_dept').value = data.stamp_dept;
             setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
+        } else {
+            console.error(error);
+            alert("Error loading settings");
         }
     }
 
@@ -203,6 +206,9 @@
         let val = parseInt(el.value) || 0; val += amount;
         if(val < 0) val = 0; el.value = val;
     }
+
+    // Start
+    fetchSettings();
 </script>
 
 </body>

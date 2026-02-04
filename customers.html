@@ -12,18 +12,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // ============================================================
-        // 1. DYNAMIC LOGIN LOGIC (The only change)
-        // ============================================================
-        const storedConfig = sessionStorage.getItem('active_store_config');
+        const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Security Check
-        if (!storedConfig) {
-            window.location.href = 'login.html';
+        checkUser();
+        async function checkUser() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html'; 
+            }
         }
-
-        const config = JSON.parse(storedConfig);
-        const supabaseClient = supabase.createClient(config.url, config.key);
     </script>
 
     <style>
@@ -170,8 +169,8 @@
     let editModalObj;
 
     // --- LOGOUT LOGIC ---
-    function doLogout() {
-        sessionStorage.removeItem('active_store_config');
+    async function doLogout() {
+        await supabaseClient.auth.signOut();
         window.location.href = 'login.html';
     }
 
@@ -186,8 +185,6 @@
         if(!error) {
             allCustomers = data;
             renderList(allCustomers);
-        } else {
-            document.getElementById('customerList').innerHTML = `<p class="text-danger">Error: ${error.message}</p>`;
         }
     }
 

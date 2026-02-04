@@ -86,10 +86,10 @@
 
         try {
             // CALL YOUR SQL FUNCTION
-            const { data: storeConfig, error } = await directoryClient.rpc('login_and_get_keys', { 
-                p_username: username,
-                p_password: password
-            });
+			// (The new Head Office way)
+			const { data: storeConfig, error } = await directoryClient.rpc('lookup_store_config', { 
+				lookup_email: email 
+			});
 
             if (error) throw error;
 

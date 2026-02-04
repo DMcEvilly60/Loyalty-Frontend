@@ -13,11 +13,11 @@
     
     <script>
         // ============================================================
-        // 1. RETRIEVE SESSION CONFIG
+        // 1. SETUP SUPABASE (But don't run functions yet)
         // ============================================================
         const storedConfig = sessionStorage.getItem('active_store_config');
 
-        // If no keys found, kick them back to login
+        // Security Check
         if (!storedConfig) {
             window.location.href = 'login.html';
         }
@@ -25,9 +25,6 @@
         const config = JSON.parse(storedConfig);
         const supabaseClient = supabase.createClient(config.url, config.key);
         const SETTINGS_ID = 1;
-
-        // Load data immediately on page load
-        document.addEventListener('DOMContentLoaded', fetchSettings);
     </script>
 
     <style>
@@ -106,16 +103,22 @@
 </div>
 
 <script>
+    // ============================================================
+    // 2. DEFINE FUNCTIONS
+    // ============================================================
+
     async function fetchSettings() {
+        // Use the global supabaseClient
         const { data, error } = await supabaseClient.from('Settings').select('*').single();
-        if (!error) {
+        if (!error && data) {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
             document.getElementById('loyalty_group').value = data.loyalty_group;
             document.getElementById('discount_logic').value = data.discount_logic;
             document.getElementById('stamp_dept').value = data.stamp_dept;
             setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
         } else {
-            alert("Error loading settings: " + error.message);
+            console.error(error);
+            alert("Error loading settings. Check console.");
         }
     }
 
@@ -145,9 +148,15 @@
     }
 
     function doLogout() {
-        sessionStorage.removeItem('active_store_config'); // Clear Keys
-        window.location.href = 'login.html'; // Redirect
+        sessionStorage.removeItem('active_store_config');
+        window.location.href = 'login.html';
     }
+
+    // ============================================================
+    // 3. START THE ENGINE (NOW it's safe!)
+    // ============================================================
+    fetchSettings();
+
 </script>
 
 </body>

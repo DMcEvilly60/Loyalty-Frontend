@@ -12,196 +12,152 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        const SUPABASE_URL = 'https://buwlmaslsirvobttszew.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_kIpp1DgcWVdcL5le1lc_Hg_Aw-vQtEl'; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ============================================================
+        // 1. RETRIEVE SESSION CONFIG
+        // ============================================================
+        // We get the URL/Key from the previous Login page
+        const storedConfig = sessionStorage.getItem('active_store_config');
+
+        // Security Check: If they didn't log in properly, kick them out
+        if (!storedConfig) {
+            window.location.href = 'login.html';
+        }
+
+        const config = JSON.parse(storedConfig);
+        const supabaseClient = supabase.createClient(config.url, config.key);
+        const SETTINGS_ID = 1; // Always row 1
 
         checkUser();
+        
         async function checkUser() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
-                window.location.href = 'login.html'; 
+                window.location.href = 'login.html';
+            } else {
+                fetchSettings();
             }
         }
     </script>
-    
+
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            --bg-color: #f8fafc;
-            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --card-radius: 16px;
-        }
-
-        body { 
-            background-color: var(--bg-color); 
-            font-family: 'Inter', sans-serif; 
-            color: #1e293b; 
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        .app-container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            min-height: 100vh;
-            /* MOBILE FIX: Clearance for floating save bar */
-            padding-bottom: 180px; 
-        }
-        
-        .header { background: white; padding: 30px 20px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
-
-        .config-card { background: white; border-radius: var(--card-radius); padding: 24px; margin-bottom: 16px; border: 1px solid #f1f5f9; box-shadow: var(--card-shadow); }
-        .card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; margin-bottom: 12px; display: block; }
-        
-        .number-control { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .btn-control { width: 44px; height: 44px; border-radius: 10px; border: none; background: white; color: #4f46e5; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; cursor: pointer; }
-        .value-display { font-size: 1.25rem; font-weight: 700; color: #1e293b; min-width: 50px; text-align: center; background: transparent; border: none; }
-
-        .select-wrapper { position: relative; }
-        .form-select { height: 55px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 1rem; font-weight: 500; background-color: #f8fafc; }
-
-        .save-bar { position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, white 80%, rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: center; z-index: 50; }
-        .btn-save { pointer-events: auto; background: var(--primary-gradient); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 1rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
-        
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; padding: 10px 0; display: flex; justify-content: center; gap: 40px; z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #94a3b8; font-size: 0.75rem; font-weight: 500; min-width: 60px; }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #4f46e5; }
-
-        /* DESKTOP TWEAKS */
-        @media (min-width: 768px) {
-            .app-container { max-width: 1000px; padding-top: 40px; padding-bottom: 40px; }
-            .header { background: transparent; border: none; text-align: left; padding: 0 0 20px 0; border-radius: 0; margin-bottom: 0; }
-            .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .config-card { margin-bottom: 0; height: 100%; }
-            .save-bar { position: static; background: transparent; padding: 40px 0; display: block; text-align: right; }
-            .btn-save { width: auto; display: inline-flex; padding: 12px 30px; }
-        }
+        body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; padding-bottom: 80px; }
+        .header { background: white; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px; overflow: hidden; }
+        .card-header { background: white; border-bottom: 1px solid #f0f0f0; padding: 15px 20px; font-weight: 600; font-size: 16px; color: #111827; }
+        .input-group-text { background: #f9fafb; border-color: #e5e7eb; color: #6b7280; }
+        .form-control { border-color: #e5e7eb; padding: 12px; }
+        .btn-action { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #e5e7eb; padding: 10px; display: flex; justify-content: space-around; z-index: 1000; }
+        .nav-item { text-align: center; color: #9ca3af; text-decoration: none; font-size: 12px; }
+        .nav-item.active { color: #4f46e5; font-weight: 600; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 2px; }
+        .save-bar { background: #4f46e5; color: white; padding: 15px; border-radius: 12px; text-align: center; margin-top: 20px; cursor: pointer; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s; }
     </style>
 </head>
 <body>
 
 <div class="loading-overlay" id="loading">
-    <div class="spinner-border text-primary mb-3" role="status"></div>
-    <h5 class="fw-bold text-secondary">Loading Config...</h5>
+    <div class="spinner-border text-primary" role="status"></div>
 </div>
 
-<div class="app-container">
+<div class="header d-flex justify-content-between align-items-center">
+    <h5 class="m-0 fw-bold">Configuration</h5>
+    <button class="btn btn-sm btn-outline-danger" onclick="doLogout()">Log Out</button>
+</div>
+
+<div class="container mt-3">
     
-    <div class="header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3 class="fw-bold m-0">Loyalty Config</h3>
-                <p class="text-muted mt-1 m-0 small">Manage store rewards & rules</p>
+    <div class="card">
+        <div class="card-header"><i class="bi bi-trophy text-warning me-2"></i>Reward Rules</div>
+        <div class="card-body">
+            <label class="form-label text-muted small fw-bold">STAMPS REQUIRED FOR FREE ITEM</label>
+            <div class="input-group mb-3">
+                <button class="btn btn-outline-secondary btn-action" onclick="adjust('stamps_for_free_item', -1)">-</button>
+                <input type="number" class="form-control text-center fw-bold" id="stamps_for_free_item" readonly>
+                <button class="btn btn-outline-primary btn-action" onclick="adjust('stamps_for_free_item', 1)">+</button>
             </div>
-            <button onclick="doLogout()" class="btn btn-sm btn-outline-danger px-3 rounded-pill">
-                Sign Out
-            </button>
+            
+            <label class="form-label text-muted small fw-bold">LOYALTY GROUP ID</label>
+            <input type="number" class="form-control mb-3" id="loyalty_group">
         </div>
     </div>
 
-    <div class="container-fluid px-0 settings-grid">
-        
-        <div class="config-card">
-            <label class="card-label"><i class="bi bi-trophy-fill me-2 text-warning"></i>Stamps for Free Item</label>
-            <div class="number-control">
-                <button class="btn-control" onclick="adjust('stamps_for_free_item', -1)"><i class="bi bi-dash"></i></button>
-                <input type="number" id="stamps_for_free_item" class="value-display" readonly>
-                <button class="btn-control" onclick="adjust('stamps_for_free_item', 1)"><i class="bi bi-plus"></i></button>
+    <div class="card">
+        <div class="card-header"><i class="bi bi-hdd-network text-primary me-2"></i>Till Integration</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold">DISCOUNT LOGIC CODE</label>
+                <input type="text" class="form-control" id="discount_logic">
+                <div class="form-text">E.g., P1L1 (Price Level 1)</div>
             </div>
-        </div>
 
-        <div class="config-card">
-            <label class="card-label"><i class="bi bi-people-fill me-2 text-info"></i>Customer Group ID</label>
-            <div class="number-control">
-                <button class="btn-control" onclick="adjust('loyalty_group', -1)"><i class="bi bi-dash"></i></button>
-                <input type="number" id="loyalty_group" class="value-display" readonly>
-                <button class="btn-control" onclick="adjust('loyalty_group', 1)"><i class="bi bi-plus"></i></button>
-            </div>
-        </div>
-
-        <div class="config-card">
-            <label class="card-label"><i class="bi bi-tag-fill me-2 text-success"></i>Stamp Department</label>
-            <div class="number-control">
-                <button class="btn-control" onclick="adjust('stamp_dept', -1)"><i class="bi bi-dash"></i></button>
-                <input type="number" id="stamp_dept" class="value-display" readonly>
-                <button class="btn-control" onclick="adjust('stamp_dept', 1)"><i class="bi bi-plus"></i></button>
-            </div>
-        </div>
-
-        <div class="config-card">
-            <label class="card-label"><i class="bi bi-calculator-fill me-2 text-danger"></i>Discount Logic</label>
-            <div class="select-wrapper">
-                <select class="form-select" id="discount_logic">
-                    <option value="Lowest">Discount Cheapest</option>
-                    <option value="Highest">Discount Most Expensive</option>
-                </select>
+            <div class="mb-0">
+                <label class="form-label text-muted small fw-bold">STAMP DEPARTMENT</label>
+                <input type="number" class="form-control" id="stamp_dept">
             </div>
         </div>
     </div>
 
-    <div class="save-bar">
-        <button class="btn-save" onclick="saveSettings()">
-            <i class="bi bi-cloud-check-fill"></i> Save Changes
-        </button>
+    <div class="save-bar" onclick="saveSettings()">
+        <i class="bi bi-cloud-upload me-2"></i> SAVE CHANGES
     </div>
 
 </div>
 
 <div class="bottom-nav">
     <a href="index.html" class="nav-item active">
-        <i class="bi bi-gear-fill"></i>
-        <span>Settings</span>
+        <i class="bi bi-sliders"></i>Settings
     </a>
     <a href="customers.html" class="nav-item">
-        <i class="bi bi-people-fill"></i>
-        <span>Customers</span>
+        <i class="bi bi-people"></i>Customers
     </a>
 </div>
 
 <script>
-    const SETTINGS_ID = 1; 
-
-    // --- LOGOUT LOGIC ---
-    async function doLogout() {
-        await supabaseClient.auth.signOut();
-        window.location.href = 'login.html';
-    }
-
-    // --- PAGE LOGIC ---
-    window.onload = fetchSettings;
-
     async function fetchSettings() {
-        const { data, error } = await supabaseClient.from('Settings').select('*').eq('ID', SETTINGS_ID).single();
+        // We use the client created at the top with the dynamic config
+        const { data, error } = await supabaseClient.from('Settings').select('*').single();
         if (!error) {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
             document.getElementById('loyalty_group').value = data.loyalty_group;
             document.getElementById('discount_logic').value = data.discount_logic;
             document.getElementById('stamp_dept').value = data.stamp_dept;
             setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
+        } else {
+            alert("Error loading settings: " + error.message);
         }
     }
 
     async function saveSettings() {
         const loader = document.getElementById('loading');
         loader.style.display = 'flex'; loader.style.opacity = '1';
+        
         const updates = {
             stamps_for_free_item: parseInt(document.getElementById('stamps_for_free_item').value),
             loyalty_group: parseInt(document.getElementById('loyalty_group').value),
             discount_logic: document.getElementById('discount_logic').value,
             stamp_dept: parseInt(document.getElementById('stamp_dept').value)
         };
+        
         const { error } = await supabaseClient.from('Settings').update(updates).eq('ID', SETTINGS_ID);
+        
         loader.style.display = 'none';
         if(error) alert("Error: " + error.message); else alert("✅ Settings Saved!");
     }
 
     function adjust(id, amount) {
         const el = document.getElementById(id);
-        let val = parseInt(el.value) || 0; val += amount;
-        if(val < 0) val = 0; el.value = val;
+        let val = parseInt(el.value) || 0;
+        val += amount;
+        if(val < 1) val = 1;
+        el.value = val;
+    }
+
+    async function doLogout() {
+        await supabaseClient.auth.signOut();
+        sessionStorage.removeItem('active_store_config'); // Clear the keys
+        window.location.href = 'login.html';
     }
 </script>
 

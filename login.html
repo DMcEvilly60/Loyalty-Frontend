@@ -50,12 +50,12 @@
 
     <div class="mb-3">
         <label class="form-label text-muted small fw-bold">USERNAME</label>
-        <input type="text" id="username" class="form-control" placeholder="admin">
+        <input type="text" id="username" class="form-control" placeholder="example@test.com">
     </div>
 
     <div class="mb-4">
         <label class="form-label text-muted small fw-bold">PASSWORD</label>
-        <input type="password" id="password" class="form-control" placeholder="••••••••">
+        <input type="password" id="password" class="form-control" placeholder="26******">
     </div>
 
     <button class="btn btn-primary w-100" id="loginBtn" onclick="handleLogin()">Sign In</button>
@@ -67,54 +67,68 @@
     // ============================================================
     // 1. HEAD OFFICE CONFIGURATION
     // ============================================================
-    // Update these with your Head Office Project credentials
-    const HEAD_OFFICE_URL = 'https://wxpbldlinwhwezdzwoer.supabase.co'; 
-    const HEAD_OFFICE_KEY = 'sb_publishable_XBueJyn2mMVZoXHY4eoqrw_SAZEho9u'; 
+    // Replace these with your NEW Head Office Project credentials
+    const HEAD_OFFICE_URL = 'https://fqttqcqqodtmvvglkpbo.supabase.co'; 
+    const HEAD_OFFICE_KEY = 'sb_publishable_ySWn1nl7Z-cgMQS1OJ21Pw_TpMT0S5x'; 
     
     const directoryClient = supabase.createClient(HEAD_OFFICE_URL, HEAD_OFFICE_KEY);
 
     async function handleLogin() {
-        const username = document.getElementById('username').value.trim();
+        // --- FIX: GRAB THE ID 'username' BUT CALL IT 'email' ---
+        // We use || to be safe, in case you named it 'email' or 'username' in the HTML
+        const inputField = document.getElementById('username') || document.getElementById('email');
+        const email = inputField.value.trim(); 
+        
         const password = document.getElementById('password').value;
         const btn = document.getElementById('loginBtn');
         const msg = document.getElementById('errorMsg');
 
         // Reset UI
         msg.style.display = 'none';
-        btn.innerText = "Checking...";
+        btn.innerText = "Locating Store...";
         btn.disabled = true;
 
         try {
-            // CALL YOUR SQL FUNCTION
-            const { data: storeConfig, error } = await directoryClient.rpc('login_and_get_keys', { 
-                p_username: username,
-                p_password: password
+            // STEP 1: LOOKUP
+            // We send the 'email' variable we just defined above
+            const { data: storeConfig, error: lookupError } = await directoryClient.rpc('lookup_store_config', { 
+                lookup_email: email 
             });
 
-            if (error) throw error;
-
-            if (!storeConfig) {
-                throw new Error("Wrong username or password");
+            if (lookupError || !storeConfig) {
+                console.error("Lookup Error:", lookupError);
+                throw new Error("Account not found.");
             }
 
-            console.log("Login Success! Keys received.");
+            console.log("Found Store URL:", storeConfig.url);
 
-            // SAVE THE KEYS for the next page
+            // STEP 2: VERIFY PASSWORD
+            btn.innerText = "Verifying Password...";
+            
+            const shopClient = supabase.createClient(storeConfig.url, storeConfig.key);
+
+            const { data: authData, error: authError } = await shopClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (authError) {
+                throw new Error("Incorrect Password");
+            }
+
+            // STEP 3: SUCCESS
             sessionStorage.setItem('active_store_config', JSON.stringify(storeConfig));
-
-            // REDIRECT
             window.location.href = 'index.html';
 
         } catch (err) {
             console.error(err);
-            msg.innerText = "Invalid Credentials";
+            msg.innerText = err.message; 
             msg.style.display = 'block';
             btn.innerText = "Sign In";
             btn.disabled = false;
         }
     }
 
-    // Allow "Enter" key to submit
     document.getElementById('password').addEventListener("keypress", function(event) {
         if (event.key === "Enter") handleLogin();
     });

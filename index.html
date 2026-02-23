@@ -13,7 +13,7 @@
     
     <script>
         // ============================================================
-        // 1. DYNAMIC LOGIN LOGIC (The only change)
+        // 1. DYNAMIC LOGIN LOGIC
         // ============================================================
         const storedConfig = sessionStorage.getItem('active_store_config');
 
@@ -46,7 +46,6 @@
             max-width: 600px; 
             margin: 0 auto; 
             min-height: 100vh;
-            /* MOBILE FIX: Clearance for floating save bar */
             padding-bottom: 180px; 
         }
         
@@ -62,6 +61,42 @@
         .select-wrapper { position: relative; }
         .form-select { height: 55px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 1rem; font-weight: 500; background-color: #f8fafc; }
 
+        /* Schedule Builder Styles */
+        .schedule-header { cursor: pointer; user-select: none; transition: opacity 0.2s; }
+        .schedule-header:hover { opacity: 0.8; }
+        .day-row { border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 15px; }
+        .day-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .day-label { 
+            font-weight: 800; color: #1e293b; width: 50px; 
+            font-size: 0.8rem; letter-spacing: 0.5px;
+            padding-top: 6px; 
+        }
+        
+        .rule-badge { 
+            background: #e0e7ff; color: #4338ca; 
+            font-size: 0.85rem; font-weight: 600; 
+            padding: 8px 12px; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; 
+            border: 1px solid #c7d2fe;
+        }
+        .rule-delete { cursor: pointer; color: #6366f1; font-size: 1.1rem; }
+        .rule-delete:hover { color: #dc2626; }
+        
+        .add-slot-row { display: flex; gap: 5px; align-items: center; margin-top: 8px; padding-left: 50px; }
+        .time-input { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; font-size: 0.85rem; width: 90px; color: #475569; background: #f8fafc; }
+        .mult-input { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; font-size: 0.85rem; width: 65px; color: #475569; font-weight: bold; background: #f8fafc; }
+        
+        .btn-add-mini { 
+            background: #4f46e5; color: white; 
+            border: none; border-radius: 6px; 
+            width: 36px; height: 34px; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: background 0.2s;
+        }
+        .btn-add-mini:hover { background: #4338ca; }
+
         .save-bar { position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, white 80%, rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: center; z-index: 50; }
         .btn-save { pointer-events: auto; background: var(--primary-gradient); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 1rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
@@ -72,7 +107,6 @@
         .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #4f46e5; }
 
-        /* DESKTOP TWEAKS */
         @media (min-width: 768px) {
             .app-container { max-width: 1000px; padding-top: 40px; padding-bottom: 40px; }
             .header { background: transparent; border: none; text-align: left; padding: 0 0 20px 0; border-radius: 0; margin-bottom: 0; }
@@ -108,10 +142,20 @@
         
         <div class="config-card">
             <label class="card-label"><i class="bi bi-trophy-fill me-2 text-warning"></i>Stamps for Free Item</label>
-            <div class="number-control">
+            <div class="number-control mb-2">
                 <button class="btn-control" onclick="adjust('stamps_for_free_item', -1)"><i class="bi bi-dash"></i></button>
                 <input type="number" id="stamps_for_free_item" class="value-display" readonly>
                 <button class="btn-control" onclick="adjust('stamps_for_free_item', 1)"><i class="bi bi-plus"></i></button>
+            </div>
+
+            <div class="schedule-header border-top pt-3 mt-4 d-flex justify-content-between align-items-center" onclick="toggleSchedule()">
+                <label class="card-label m-0" style="cursor: pointer;"><i class="bi bi-calendar-week-fill me-2 text-primary"></i>Weekly Multiplier Schedule</label>
+                <i class="bi bi-chevron-down text-muted fs-5" id="schedule-chevron"></i>
+            </div>
+            
+            <div id="schedule-wrapper" style="display: none; padding-top: 15px;">
+                <div id="schedule-container">
+                    </div>
             </div>
         </div>
 
@@ -164,22 +208,40 @@
 </div>
 
 <script>
-    // --- LOGOUT LOGIC ---
+    let currentRules = [];
+    const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
     function doLogout() {
         sessionStorage.removeItem('active_store_config');
         window.location.href = 'login.html';
     }
 
-    // --- PAGE LOGIC ---
-    // Moved to bottom to prevent "fetchSettings not defined" error
+    // --- TOGGLE SCHEDULE LOGIC ---
+    function toggleSchedule() {
+        const wrapper = document.getElementById('schedule-wrapper');
+        const chevron = document.getElementById('schedule-chevron');
+        if (wrapper.style.display === 'none') {
+            wrapper.style.display = 'block';
+            chevron.classList.remove('bi-chevron-down');
+            chevron.classList.add('bi-chevron-up');
+        } else {
+            wrapper.style.display = 'none';
+            chevron.classList.remove('bi-chevron-up');
+            chevron.classList.add('bi-chevron-down');
+        }
+    }
+
     async function fetchSettings() {
-        // Use the supabaseClient defined at the top
         const { data, error } = await supabaseClient.from('Settings').select('*').eq('ID', SETTINGS_ID).single();
         if (!error && data) {
             document.getElementById('stamps_for_free_item').value = data.stamps_for_free_item;
             document.getElementById('loyalty_group').value = data.loyalty_group;
             document.getElementById('discount_logic').value = data.discount_logic;
             document.getElementById('stamp_dept').value = data.stamp_dept;
+
+            currentRules = data.promo_schedule || [];
+            renderSchedule();
+            
             setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
         } else {
             console.error(error);
@@ -187,16 +249,107 @@
         }
     }
 
+    function renderSchedule() {
+        const container = document.getElementById('schedule-container');
+        container.innerHTML = ""; 
+
+        DAYS_OF_WEEK.forEach(day => {
+            const dayRules = currentRules.filter(r => r.day === day);
+            
+            // Create vertical stack of badges
+            let badgesHtml = "";
+            if (dayRules.length > 0) {
+                // We wrap badges in a vertical flex container
+                badgesHtml = `<div class="d-flex flex-column gap-2">`;
+                dayRules.forEach(rule => {
+                    const realIndex = currentRules.indexOf(rule);
+                    badgesHtml += `
+                        <div class="rule-badge">
+                            <span>${rule.start} - ${rule.end} &nbsp; <span class="badge bg-white text-primary rounded-pill">x${rule.mult}</span></span>
+                            <i class="bi bi-x-circle-fill rule-delete" onclick="removeRule(${realIndex})"></i>
+                        </div>
+                    `;
+                });
+                badgesHtml += `</div>`;
+            } else {
+                badgesHtml = `<div class="text-muted small fst-italic py-2">No active rules</div>`;
+            }
+
+            const daySection = document.createElement('div');
+            daySection.className = 'day-row';
+            daySection.innerHTML = `
+                <div class="d-flex align-items-start mb-1">
+                    <div class="day-label">${day.substring(0,3).toUpperCase()}</div>
+                    <div class="flex-grow-1">
+                        ${badgesHtml}
+                    </div>
+                </div>
+                
+                <div class="add-slot-row">
+                    <input type="time" class="time-input" id="start-${day}" value="17:00" step="900">
+                    <span class="text-muted small">-</span>
+                    <input type="time" class="time-input" id="end-${day}" value="19:00" step="900">
+                    <select class="mult-input" id="mult-${day}">
+                        <option value="2">x2</option>
+                        <option value="3">x3</option>
+                        <option value="4">x4</option>
+                    </select>
+                    <button class="btn-add-mini" onclick="addRuleForDay('${day}')">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(daySection);
+        });
+    }
+
+    function addRuleForDay(day) {
+        const start = document.getElementById(`start-${day}`).value;
+        const end = document.getElementById(`end-${day}`).value;
+        const mult = document.getElementById(`mult-${day}`).value;
+
+        if(!start || !end) return alert("Please set a time range");
+        if(start >= end) return alert("End time must be after start time");
+
+        // --- DUPLICATE PROTECTION ---
+        // Prevents user from adding the exact same slot twice
+        const exists = currentRules.some(r => r.day === day && r.start === start && r.end === end);
+        if (exists) {
+            return alert("This time slot already exists!");
+        }
+
+        currentRules.push({
+            day: day,
+            start: start,
+            end: end,
+            mult: parseInt(mult)
+        });
+
+        // Sort rules by time for neatness
+        currentRules.sort((a, b) => a.start.localeCompare(b.start));
+
+        renderSchedule();
+    }
+
+    function removeRule(index) {
+        currentRules.splice(index, 1);
+        renderSchedule();
+    }
+
     async function saveSettings() {
         const loader = document.getElementById('loading');
         loader.style.display = 'flex'; loader.style.opacity = '1';
+        
         const updates = {
             stamps_for_free_item: parseInt(document.getElementById('stamps_for_free_item').value),
             loyalty_group: parseInt(document.getElementById('loyalty_group').value),
             discount_logic: document.getElementById('discount_logic').value,
-            stamp_dept: parseInt(document.getElementById('stamp_dept').value)
+            stamp_dept: parseInt(document.getElementById('stamp_dept').value),
+            promo_schedule: currentRules
         };
+        
         const { error } = await supabaseClient.from('Settings').update(updates).eq('ID', SETTINGS_ID);
+        
         loader.style.display = 'none';
         if(error) alert("Error: " + error.message); else alert("✅ Settings Saved!");
     }
@@ -207,7 +360,6 @@
         if(val < 0) val = 0; el.value = val;
     }
 
-    // Start
     fetchSettings();
 </script>
 

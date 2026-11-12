@@ -65,68 +65,44 @@
 
 <script>
     // ============================================================
-    // 1. HEAD OFFICE CONFIGURATION
+    // HARDCODED PRESENTATION CONFIG (Taken from Loyalty.moc)
     // ============================================================
-    // Replace these with your NEW Head Office Project credentials
-    const HEAD_OFFICE_URL = 'https://fqttqcqqodtmvvglkpbo.supabase.co'; 
-    const HEAD_OFFICE_KEY = 'sb_publishable_ySWn1nl7Z-cgMQS1OJ21Pw_TpMT0S5x'; 
-    
-    const directoryClient = supabase.createClient(HEAD_OFFICE_URL, HEAD_OFFICE_KEY);
+    const DEMO_STORE_CONFIG = {
+        url: 'https://bepqrctwphjfrgqvhdag.supabase.co',
+        key: 'sb_publishable_lTMHoev56wHAO2UjvzYWdA_rx1sfN6D'
+    };
 
-    async function handleLogin() {
-        // --- FIX: GRAB THE ID 'username' BUT CALL IT 'email' ---
-        // We use || to be safe, in case you named it 'email' or 'username' in the HTML
+    // Optional: Set whatever password you want to type during the demo
+    const DEMO_PASSWORD = 'password'; 
+
+    function handleLogin() {
         const inputField = document.getElementById('username') || document.getElementById('email');
         const email = inputField.value.trim(); 
-        
         const password = document.getElementById('password').value;
         const btn = document.getElementById('loginBtn');
         const msg = document.getElementById('errorMsg');
 
-        // Reset UI
         msg.style.display = 'none';
-        btn.innerText = "Locating Store...";
+
+        if (!email) {
+            msg.innerText = "Please enter a username.";
+            msg.style.display = 'block';
+            return;
+        }
+
+        // Simple hardcoded password check (change or remove if you want any password to work)
+        if (password !== DEMO_PASSWORD) {
+            msg.innerText = "Incorrect Password";
+            msg.style.display = 'block';
+            return;
+        }
+
+        btn.innerText = "Signing in...";
         btn.disabled = true;
 
-        try {
-            // STEP 1: LOOKUP
-            // We send the 'email' variable we just defined above
-            const { data: storeConfig, error: lookupError } = await directoryClient.rpc('lookup_store_config', { 
-                lookup_email: email 
-            });
-
-            if (lookupError || !storeConfig) {
-                console.error("Lookup Error:", lookupError);
-                throw new Error("Account not found.");
-            }
-
-            console.log("Found Store URL:", storeConfig.url);
-
-            // STEP 2: VERIFY PASSWORD
-            btn.innerText = "Verifying Password...";
-            
-            const shopClient = supabase.createClient(storeConfig.url, storeConfig.key);
-
-            const { data: authData, error: authError } = await shopClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-            if (authError) {
-                throw new Error("Incorrect Password");
-            }
-
-            // STEP 3: SUCCESS
-            sessionStorage.setItem('active_store_config', JSON.stringify(storeConfig));
-            window.location.href = 'index.html';
-
-        } catch (err) {
-            console.error(err);
-            msg.innerText = err.message; 
-            msg.style.display = 'block';
-            btn.innerText = "Sign In";
-            btn.disabled = false;
-        }
+        // Save store config directly to sessionStorage so index.html and customers.html work immediately
+        sessionStorage.setItem('active_store_config', JSON.stringify(DEMO_STORE_CONFIG));
+        window.location.href = 'index.html';
     }
 
     document.getElementById('password').addEventListener("keypress", function(event) {
